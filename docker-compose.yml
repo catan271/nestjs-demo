@@ -4,6 +4,7 @@ services:
     env_file: 
       - .env
     command: mysqld --default_time_zone="Asia/Ho_Chi_Minh" --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
     volumes:
       - ./db:/var/lib/mysql
     ports:
