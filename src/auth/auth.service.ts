@@ -20,7 +20,6 @@ export class AuthService {
             where: {
                 email: email.toLowerCase(),
             },
-            withDeleted: true,
         });
 
         if (!user || !(await compare(password, user.password))) {
@@ -51,7 +50,6 @@ export class AuthService {
             where: {
                 id,
             },
-            withDeleted: true,
         });
 
         if (!user) {

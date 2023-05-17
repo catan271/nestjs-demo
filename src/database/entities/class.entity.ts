@@ -13,49 +13,49 @@ import { ClassTeacher } from './classTeacher.entity';
 @Entity('classes')
 export class Class extends BaseEntity {
     @PrimaryGeneratedColumn()
-    public id: number;
+    id: number;
 
     @Column('varchar')
-    public semester: string;
+    semester: string;
 
     @Column('int')
-    public classNumber: string;
+    classNumber: number;
 
     @Column('varchar', {
         nullable: true,
     })
-    public schedule: string;
+    schedule: string;
 
     @Column('varchar', {
         nullable: true,
     })
-    public classroom: string;
+    classroom: string;
 
     @Column('varchar', {
         nullable: true,
     })
-    public joinCode: string;
+    joinCode: string;
 
     @Column('bool', {
         default: false,
     })
-    public requirePermission: boolean;
+    requirePermission: boolean;
 
     @CreateDateColumn()
-    public createdAt: Date;
+    createdAt: Date;
 
     @UpdateDateColumn()
-    public updatedAt: Date;
+    updatedAt: Date;
 
     @OneToMany(() => ClassTeacher, (classTeacher) => classTeacher.class, {
         cascade: true,
     })
-    public classTeachers: ClassTeacher[];
+    classTeachers: ClassTeacher[];
 
     @OneToMany(() => ClassTeacher, (classStudent) => classStudent.class, {
         cascade: true,
     })
-    public classStudents: ClassTeacher[];
+    classStudents: ClassTeacher[];
 
     constructor(props?: Partial<Class>) {
         super();

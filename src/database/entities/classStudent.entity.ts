@@ -14,39 +14,39 @@ import { Class } from './class.entity';
 @Entity('class_students')
 export class ClassStudent extends BaseEntity {
     @PrimaryGeneratedColumn()
-    public id: number;
+    id: number;
 
     @Column('int')
-    public classId: number;
+    classId: number;
 
     @Column('int')
-    public studentId: number;
+    studentId: number;
 
     @Column('bool', {
         default: false,
     })
-    public hidden: boolean;
+    hidden: boolean;
 
     @Column('bool', {
         default: false,
     })
-    public waiting: boolean;
+    waiting: boolean;
 
     @CreateDateColumn()
-    public createdAt: Date;
+    createdAt: Date;
 
     @UpdateDateColumn()
-    public updatedAt: Date;
+    updatedAt: Date;
 
     @ManyToOne(() => Class, (_class) => _class.classStudents, {
         onDelete: 'CASCADE',
     })
-    public class: Class;
+    class: Class;
 
     @ManyToOne(() => User, (user) => user.classStudents, {
         onDelete: 'CASCADE',
     })
-    public user: User;
+    user: User;
 
     constructor(props: Partial<ClassStudent>) {
         super();

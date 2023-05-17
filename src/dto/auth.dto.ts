@@ -1,4 +1,4 @@
-import { IsEmail, IsIn, IsString, Matches } from 'class-validator';
+import { IsEmail, IsIn, IsOptional, IsString, Matches } from 'class-validator';
 import { User } from '../database/entities/user.entity';
 import { Trim } from '../utils/trim.util';
 import { roles } from '../constants/roles.constant';
@@ -10,33 +10,48 @@ export interface IRequest extends Request {
 export class CreateUserDto {
     @IsEmail()
     @Trim()
-    public email: string;
+    email: string;
 
     @IsString()
-    public password: string;
+    password: string;
 
     @Trim()
     @IsString()
-    public familyName: string;
+    familyName: string;
 
     @Trim()
     @IsString()
-    public givenName: string;
+    givenName: string;
 
+    @IsOptional()
     @Trim()
     @IsString()
     @Matches(/\d+/)
-    public mobile: string;
+    studentNumber: string;
+
+    @IsOptional()
+    @Trim()
+    @IsString()
+    @Matches(/\d+/)
+    mobile: string;
 
     @IsIn(Object.values(roles).map((e) => e.value))
-    public role: number;
+    role: number;
 }
 
 export class LoginDto {
     @Trim()
     @IsEmail()
-    public email: string;
+    email: string;
 
     @IsString()
-    public password: string;
+    password: string;
+}
+
+export class ChangePasswordDto {
+    @IsString()
+    oldPassword: string;
+
+    @IsString()
+    newPassword: string;
 }

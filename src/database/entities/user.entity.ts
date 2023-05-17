@@ -3,6 +3,7 @@ import {
     BaseEntity,
     Column,
     CreateDateColumn,
+    DeleteDateColumn,
     Entity,
     OneToMany,
     PrimaryGeneratedColumn,
@@ -14,52 +15,58 @@ import { ClassTeacher } from './classTeacher.entity';
 @Entity('users')
 export class User extends BaseEntity {
     @PrimaryGeneratedColumn()
-    public id: number;
+    id: number;
 
     @Column('varchar', {
         unique: true,
     })
-    public email: string;
+    email: string;
 
     @Column('varchar')
     @Exclude()
-    public password: string;
+    password: string;
 
     @Column('varchar')
-    public familyName: string;
+    familyName: string;
 
     @Column('varchar')
-    public givenName: string;
+    givenName: string;
 
     @Column('varchar', {
         length: 15,
         nullable: true,
     })
-    public mobile: string;
+    mobile: string;
 
     @Column('tinyint', {
         default: accountStatus.ACTIVE.value,
     })
-    public status: number;
+    status: number;
 
     @Column('tinyint')
-    public role: number;
+    role: number;
+
+    @Column('varchar')
+    studentNumber: string;
 
     @CreateDateColumn()
-    public createdAt: Date;
+    createdAt: Date;
 
     @UpdateDateColumn()
-    public updatedAt: Date;
+    updatedAt: Date;
+
+    @DeleteDateColumn()
+    deletedAt: Date;
 
     @OneToMany(() => ClassTeacher, (classTeacher) => classTeacher.user, {
         cascade: true,
     })
-    public classTeachers: ClassTeacher[];
+    classTeachers: ClassTeacher[];
 
     @OneToMany(() => ClassTeacher, (classStudent) => classStudent.user, {
         cascade: true,
     })
-    public classStudents: ClassTeacher[];
+    classStudents: ClassTeacher[];
 
     constructor(props?: Partial<User>) {
         super();

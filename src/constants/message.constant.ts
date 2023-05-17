@@ -11,4 +11,5 @@ export const errors = {
 
     // Users
     EMAIL_TAKEN: 'Email đã được sử dụng',
+    STUDENT_NUMBER_REQUIRED: 'Phải có mã sinh viên',
 };

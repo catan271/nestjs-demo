@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from '../dto/auth.dto';
 import { errors } from '../constants/message.constant';
 import { AuthService } from '../auth/auth.service';
+import { roles } from '../constants/roles.constant';
+import { UpdateUserDto } from '../dto/user.dto';
 
 @Injectable()
 export class UserService {
@@ -15,11 +17,19 @@ export class UserService {
     ) {}
 
     async createUser(body: CreateUserDto) {
-        if (
-            await this.userRepository.findOneBy({
-                email: body.email,
-            })
-        ) {
+        if (body.role === roles.STUDENT.value && !body.studentNumber) {
+            throw new HttpException(errors.STUDENT_NUMBER_REQUIRED, HttpStatus.BAD_REQUEST);
+        }
+
+        const existingUser = await this.userRepository.findOne({
+            where: { email: body.email },
+            withDeleted: true,
+        });
+
+        if (existingUser) {
+            if (existingUser.deletedAt) {
+                await this.userRepository.remove(existingUser);
+            }
             throw new HttpException(errors.EMAIL_TAKEN, HttpStatus.BAD_REQUEST);
         }
 
@@ -30,5 +40,19 @@ export class UserService {
         await this.userRepository.save(user);
 
         return this.authService.login(body.email, body.password);
+    }
+
+    async updateUser(user: User, body: UpdateUserDto) {
+        Object.assign(user, body);
+
+        if (user.role === roles.STUDENT.value && !user.studentNumber) {
+            throw new HttpException(errors.STUDENT_NUMBER_REQUIRED, HttpStatus.BAD_REQUEST);
+        }
+
+        return this.userRepository.save(user);
+    }
+
+    async deleteUser(user: User) {
+        return this.userRepository.softRemove(user);
     }
 }

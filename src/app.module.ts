@@ -6,10 +6,11 @@ import { options } from './database/orm.config';
 import { entities } from './database/entities';
 import { AuthController } from './controllers/auth.controller';
 import { UserService } from './services/user.service';
+import { UserController } from './controllers/user.controller';
 
 @Module({
     imports: [AuthModule, ConfigModule.forRoot(), TypeOrmModule.forRoot(options), TypeOrmModule.forFeature(entities)],
-    controllers: [AuthController],
+    controllers: [AuthController, UserController],
     providers: [UserService],
 })
 export class AppModule {}
