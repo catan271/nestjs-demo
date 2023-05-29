@@ -20,7 +20,7 @@ export class ClassStudent extends BaseEntity {
     classId: number;
 
     @Column('int')
-    studentId: number;
+    userId: number;
 
     @Column('bool', {
         default: false,

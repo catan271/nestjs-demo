@@ -16,25 +16,18 @@ export class Class extends BaseEntity {
     id: number;
 
     @Column('varchar')
-    semester: string;
+    name: string;
 
-    @Column('int')
-    classNumber: number;
-
-    @Column('varchar', {
+    @Column('text', {
         nullable: true,
     })
-    schedule: string;
+    description: string;
 
     @Column('varchar', {
-        nullable: true,
+        unique: true,
+        length: 6,
     })
-    classroom: string;
-
-    @Column('varchar', {
-        nullable: true,
-    })
-    joinCode: string;
+    classNumber: string;
 
     @Column('bool', {
         default: false,
