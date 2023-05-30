@@ -1,12 +1,13 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../database/entities/user.entity';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { CreateUserDto } from '../dto/auth.dto';
 import { errors } from '../constants/message.constant';
 import { AuthService } from '../auth/auth.service';
 import { roles } from '../constants/roles.constant';
 import { UpdateUserDto } from '../dto/user.dto';
+import { QueryDto } from '../dto/common.dto';
 
 @Injectable()
 export class UserService {
@@ -54,5 +55,15 @@ export class UserService {
 
     async deleteUser(user: User) {
         return this.userRepository.softRemove(user);
+    }
+
+    async getListUsers({ search = '', take = 10, skip = 0 }: QueryDto) {
+        search = '%' + search.replace(/\s+/g, '%') + '%';
+        const [records, total] = await this.userRepository.findAndCount({
+            where: [{ email: ILike(search) }, { givenName: ILike(search) }, { familyName: ILike(search) }],
+            take,
+            skip,
+        });
+        return { take, skip, total, records };
     }
 }

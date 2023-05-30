@@ -20,9 +20,12 @@ export class ClassService {
     ) {}
 
     async getListClassesOfTeacher(userId: number, { search = '', take, skip }: QueryDto) {
-        const query = this.classRepository
-            .createQueryBuilder('class')
-            .innerJoin('class.classTeachers', 'classTeacher', 'classTeacher.userId = :userId', { userId });
+        const query = this.classTeacherRepository
+            .createQueryBuilder('teacherClass')
+            .innerJoinAndSelect('teacherClass.class', 'class')
+            .where({
+                userId,
+            });
 
         if (search) {
             search = '%' + search.replace(/\s+/g, '%') + '%';
