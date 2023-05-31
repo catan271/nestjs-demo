@@ -1,13 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ClassTeacher } from '../database/entities/classTeacher.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { ClassStudent } from '../database/entities/classStudent.entity';
-import { GetListMembersDto } from '../dto/member.dto';
+import { AddMemberDto, GetListMembersDto, RemoveMembersDto } from '../dto/member.dto';
+import { ClassService } from './class.service';
+import { UserService } from './user.service';
+import { roles } from '../constants/roles.constant';
+import { errors } from '../constants/message.constant';
 
 @Injectable()
 export class MemberService {
     constructor(
+        private userService: UserService,
+        private classService: ClassService,
         @InjectRepository(ClassTeacher)
         private classTeacherRepository: Repository<ClassTeacher>,
         @InjectRepository(ClassStudent)
@@ -46,5 +52,31 @@ export class MemberService {
             teachers: { records: teachers },
             students: { take, skip, records, total },
         };
+    }
+
+    async addMemberToClass(teacherId: number, { classId, userId }: AddMemberDto) {
+        await this.classService.getClassOfTeacherById(teacherId, classId);
+
+        const user = await this.userService.getUserById(userId);
+        if (user.role === roles.TEACHER.value) {
+            if (await this.classTeacherRepository.findOneBy({ classId, userId })) {
+                throw new HttpException(errors.MEMBER_ALREADY_IN_CLASS, HttpStatus.BAD_REQUEST);
+            }
+            await this.classTeacherRepository.save({ classId, userId });
+        } else if (user.role === roles.STUDENT.value) {
+            if (await this.classStudentRepository.findOneBy({ classId, userId })) {
+                throw new HttpException(errors.MEMBER_ALREADY_IN_CLASS, HttpStatus.BAD_REQUEST);
+            }
+            await this.classStudentRepository.save({ classId, userId });
+        }
+
+        return { message: 'ok' };
+    }
+
+    async removeMembersFromClass(teacherId: number, { classId, ids }: RemoveMembersDto) {
+        await this.classService.getClassOfTeacherById(teacherId, classId);
+        await this.classTeacherRepository.delete({ classId, userId: In(ids) });
+        await this.classStudentRepository.delete({ classId, userId: In(ids) });
+        return { message: 'ok' };
     }
 }

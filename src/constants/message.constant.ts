@@ -16,4 +16,7 @@ export const errors = {
 
     // Classes
     CLASS_NUMBER_TAKEN: 'Mã lớp đã được sử dụng',
+
+    // Members
+    MEMBER_ALREADY_IN_CLASS: 'Thành viên đã trong lớp',
 };

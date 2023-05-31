@@ -17,6 +17,14 @@ export class UserService {
         private authService: AuthService,
     ) {}
 
+    async getUserById(userId: number) {
+        const user = await this.userRepository.findOneBy({ id: userId });
+        if (!user) {
+            throw new HttpException(errors.NOT_FOUND, HttpStatus.BAD_REQUEST);
+        }
+        return user;
+    }
+
     async createUser(body: CreateUserDto) {
         if (body.role === roles.STUDENT.value && !body.studentNumber) {
             throw new HttpException(errors.STUDENT_NUMBER_REQUIRED, HttpStatus.BAD_REQUEST);

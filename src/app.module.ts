@@ -11,20 +11,12 @@ import { ClassService } from './services/class.service';
 import { TeacherClassController } from './controllers/teacher/class.controller';
 import { ConfigController } from './controllers/config.controller';
 import { ConfigService } from './services/config.service';
-import { TeacherUserController } from './controllers/teacher/user.controller';
 import { TeacherMemberController } from './controllers/teacher/member.controller';
 import { MemberService } from './services/member.service';
 
 @Module({
     imports: [AuthModule, ConfigModule.forRoot(), TypeOrmModule.forRoot(options), TypeOrmModule.forFeature(entities)],
-    controllers: [
-        AuthController,
-        ConfigController,
-        UserController,
-        TeacherClassController,
-        TeacherUserController,
-        TeacherMemberController,
-    ],
+    controllers: [AuthController, ConfigController, UserController, TeacherClassController, TeacherMemberController],
     providers: [ConfigService, UserService, ClassService, MemberService],
 })
 export class AppModule {}
