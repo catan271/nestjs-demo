@@ -13,10 +13,19 @@ import { ConfigController } from './controllers/config.controller';
 import { ConfigService } from './services/config.service';
 import { TeacherMemberController } from './controllers/teacher/member.controller';
 import { MemberService } from './services/member.service';
+import { TeacherQuizController } from './controllers/teacher/quiz.controller';
+import { QuizService } from './services/quiz.service';
 
 @Module({
     imports: [AuthModule, ConfigModule.forRoot(), TypeOrmModule.forRoot(options), TypeOrmModule.forFeature(entities)],
-    controllers: [AuthController, ConfigController, UserController, TeacherClassController, TeacherMemberController],
-    providers: [ConfigService, UserService, ClassService, MemberService],
+    controllers: [
+        AuthController,
+        ConfigController,
+        UserController,
+        TeacherClassController,
+        TeacherMemberController,
+        TeacherQuizController,
+    ],
+    providers: [ConfigService, UserService, ClassService, MemberService, QuizService],
 })
 export class AppModule {}

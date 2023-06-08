@@ -19,4 +19,8 @@ export const errors = {
 
     // Members
     MEMBER_ALREADY_IN_CLASS: 'Thành viên đã trong lớp',
+
+    // Quiz
+    INVALID_QUESTIONS_AND_KEYS: 'Câu hỏi và đáp án không hợp lệ',
+    MISSING_POSITION: 'Thiếu tọa độ',
 };

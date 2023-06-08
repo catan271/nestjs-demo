@@ -31,8 +31,9 @@ export class MemberService {
         const query = this.classStudentRepository
             .createQueryBuilder('classStudent')
             .innerJoinAndSelect('classStudent.user', 'user')
-            .where({ classId });
-
+            .where({ classId })
+            .take(take)
+            .skip(skip);
         if (search) {
             search = '%' + search.replace(/\s+/g, '%') + '%';
             query.andWhere(
@@ -40,14 +41,8 @@ export class MemberService {
                 { search },
             );
         }
-        if (take) {
-            query.take(take);
-        }
-        if (skip) {
-            query.skip(skip);
-        }
-
         const [records, total] = await query.getManyAndCount();
+
         return {
             teachers: { records: teachers },
             students: { take, skip, records, total },

@@ -25,20 +25,15 @@ export class ClassService {
             .innerJoinAndSelect('teacherClass.class', 'class')
             .where({
                 userId,
-            });
-
+            })
+            .take(take)
+            .skip(skip);
         if (search) {
             search = '%' + search.replace(/\s+/g, '%') + '%';
             query.andWhere('(UPPER(class.name) LIKE UPPER(:search) OR class.classNumber LIKE :search)', { search });
         }
-        if (take) {
-            query.take(take);
-        }
-        if (skip) {
-            query.skip(skip);
-        }
-
         const [records, total] = await query.getManyAndCount();
+
         return { take, skip, total, records };
     }
 

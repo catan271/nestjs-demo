@@ -12,9 +12,9 @@ import { QueryDto } from '../dto/common.dto';
 @Injectable()
 export class UserService {
     constructor(
+        private authService: AuthService,
         @InjectRepository(User)
         private userRepository: Repository<User>,
-        private authService: AuthService,
     ) {}
 
     async getUserById(userId: number) {

@@ -9,6 +9,7 @@ import {
     UpdateDateColumn,
 } from 'typeorm';
 import { ClassTeacher } from './classTeacher.entity';
+import { Quiz } from './quiz.entity';
 
 @Entity('classes')
 export class Class extends BaseEntity {
@@ -49,6 +50,11 @@ export class Class extends BaseEntity {
         cascade: true,
     })
     classStudents: ClassTeacher[];
+
+    @OneToMany(() => Quiz, (quiz) => quiz.class, {
+        cascade: true,
+    })
+    quizzes: Quiz[];
 
     constructor(props?: Partial<Class>) {
         super();
