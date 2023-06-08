@@ -3,7 +3,8 @@ import {
     Column,
     CreateDateColumn,
     Entity,
-    ManyToOne,
+    JoinColumn,
+    OneToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
@@ -28,9 +29,10 @@ export class KeyEntity extends BaseEntity {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @ManyToOne(() => Quiz, (quiz) => quiz.key, {
+    @OneToOne(() => Quiz, (quiz) => quiz.key, {
         onDelete: 'CASCADE',
     })
+    @JoinColumn()
     quiz: Quiz;
 
     constructor(props: Partial<KeyEntity>) {

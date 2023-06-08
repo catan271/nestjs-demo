@@ -69,6 +69,9 @@ export class MemberService {
     }
 
     async removeMembersFromClass(teacherId: number, { classId, ids }: RemoveMembersDto) {
+        if (ids.includes(teacherId)) {
+            throw new HttpException(errors.DELETE_SELF, HttpStatus.BAD_REQUEST);
+        }
         await this.classService.getClassOfTeacherById(teacherId, classId);
         await this.classTeacherRepository.delete({ classId, userId: In(ids) });
         await this.classStudentRepository.delete({ classId, userId: In(ids) });

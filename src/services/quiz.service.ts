@@ -3,11 +3,12 @@ import { ClassService } from './class.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Quiz } from '../database/entities/quiz.entity';
 import { Repository } from 'typeorm';
-import { CreateQuizDto, GetListQuizzesDto } from '../dto/quiz.dto';
+import { CreateQuizDto, GetListQuizzesDto, UpdateQuizDto } from '../dto/quiz.dto';
 import { KeyEntity } from '../database/entities/key.entity';
 import { validateQuestion } from '../utils/validateQuestions.util';
 import { errors } from '../constants/message.constant';
 import dayjs from 'dayjs';
+import { IdsDto } from '../dto/common.dto';
 
 @Injectable()
 export class QuizService {
@@ -22,7 +23,7 @@ export class QuizService {
     async createQuiz(userId: number, body: CreateQuizDto) {
         const { classId, questions, shuffled, closeTime, open, position, keys } = body;
 
-        await this.classService.getClassOfTeacherById(userId, body.classId);
+        await this.classService.getClassOfTeacherById(userId, classId);
         if (!validateQuestion(questions, keys)) {
             throw new HttpException(errors.INVALID_QUESTIONS_AND_KEYS, HttpStatus.BAD_REQUEST);
         }
@@ -60,6 +61,19 @@ export class QuizService {
         return { take, skip, records, total };
     }
 
+    async getListQuizzesOfClassStudent(userId: number, { classId, take = 10, skip = 0 }: GetListQuizzesDto) {
+        await this.classService.getClassOfStudentById(userId, classId);
+
+        const [records, total] = await this.quizRepository
+            .createQueryBuilder('quiz')
+            .where({ classId })
+            .take(take)
+            .skip(skip)
+            .getManyAndCount();
+
+        return { take, skip, records, total };
+    }
+
     async getQuizById(userId: number, id: number) {
         const quiz = await this.quizRepository
             .createQueryBuilder('quiz')
@@ -85,5 +99,43 @@ export class QuizService {
             throw new HttpException(errors.NOT_FOUND, HttpStatus.NOT_FOUND);
         }
         return quiz;
+    }
+
+    async updateQuiz(userId: number, id: number, body: UpdateQuizDto) {
+        const { questions, shuffled, closeTime, open, position, keys } = body;
+
+        const quiz = await this.getQuizById(userId, id);
+        quiz.shuffled = shuffled;
+        quiz.closeTime = closeTime;
+        if (questions) {
+            if (!validateQuestion(questions, keys)) {
+                throw new HttpException(errors.INVALID_QUESTIONS_AND_KEYS, HttpStatus.BAD_REQUEST);
+            }
+            quiz.questions = questions;
+            quiz.key.keys = keys;
+        }
+        if (open) {
+            if (position) {
+                throw new HttpException(errors.MISSING_POSITION, HttpStatus.BAD_REQUEST);
+            }
+            quiz.open = open;
+            quiz.position = position;
+        }
+        if (open && dayjs(closeTime).isBefore(dayjs())) {
+            quiz.closeTime = null;
+        }
+
+        return this.quizRepository.save(quiz);
+    }
+
+    async deleteQuizzes(userId: number, { ids }: IdsDto) {
+        const validQuizzes = await this.quizRepository
+            .createQueryBuilder('quiz')
+            .innerJoin('quiz.class', 'class')
+            .innerJoin('class.classTeachers', 'classTeacher', 'classTeacher.id = :userId', { userId })
+            .where('id IN(:ids)', { ids })
+            .getMany();
+        const quizIds = validQuizzes.map((e) => e.id);
+        return this.quizRepository.delete(quizIds);
     }
 }

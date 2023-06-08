@@ -1,11 +1,11 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { roles } from '../../constants/roles.constant';
 import { QuizService } from '../../services/quiz.service';
 import { IRequest } from '../../dto/auth.dto';
-import { CreateQuizDto, GetListQuizzesDto } from '../../dto/quiz.dto';
-import { IdParam } from '../../dto/common.dto';
+import { CreateQuizDto, GetListQuizzesDto, UpdateQuizDto } from '../../dto/quiz.dto';
+import { IdParam, IdsDto } from '../../dto/common.dto';
 
 @Controller('teacher/quizzes')
 @UseGuards(RolesGuard)
@@ -26,5 +26,15 @@ export class TeacherQuizController {
     @Post('/')
     async createQuiz(@Req() { user }: IRequest, @Body() body: CreateQuizDto) {
         return this.quizService.createQuiz(user.id, body);
+    }
+
+    @Put('/:id')
+    async updateQuiz(@Req() { user }: IRequest, @Param() { id }: IdParam, @Body() body: UpdateQuizDto) {
+        return this.quizService.updateQuiz(user.id, id, body);
+    }
+
+    @Delete('/')
+    async deleteQuizzes(@Req() { user }: IRequest, @Body() body: IdsDto) {
+        return this.quizService.deleteQuizzes(user.id, body);
     }
 }

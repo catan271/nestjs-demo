@@ -49,6 +49,18 @@ export class ClassService {
         return _class;
     }
 
+    async getClassOfStudentById(userId: number, classId: number) {
+        const _class = await this.classRepository
+            .createQueryBuilder('class')
+            .innerJoin('class.classStudents', 'classStudent', 'classStudent.userId = :userId', { userId })
+            .where({ id: classId })
+            .getOne();
+        if (!_class) {
+            throw new HttpException(errors.NOT_FOUND, HttpStatus.NOT_FOUND);
+        }
+        return _class;
+    }
+
     async createClass(userId: number, body: CreateClassDto) {
         if (await this.classRepository.findOneBy({ classNumber: body.classNumber })) {
             throw new HttpException(errors.CLASS_NUMBER_TAKEN, HttpStatus.BAD_REQUEST);
@@ -81,11 +93,7 @@ export class ClassService {
             classId: In(ids),
             userId,
         });
-
         const classIds = teacherClasses.map((e) => e.classId);
-
-        return this.classRepository.delete({
-            id: In(classIds),
-        });
+        return this.classRepository.delete(classIds);
     }
 }

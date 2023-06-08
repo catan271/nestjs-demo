@@ -1,7 +1,7 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class QuizModule1686194565256 implements MigrationInterface {
-    name = 'QuizModule1686194565256'
+    name = 'QuizModule1686194565256';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`
@@ -52,5 +52,4 @@ export class QuizModule1686194565256 implements MigrationInterface {
             DROP TABLE \`keys\`
         `);
     }
-
 }
