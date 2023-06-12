@@ -23,6 +23,11 @@ export class TeacherClassController {
         return this.classService.createClass(user.id, body);
     }
 
+    @Get('/:id')
+    async getClassById(@Req() { user }: IRequest, @Param() { id }: IdParam) {
+        return this.classService.getClassOfTeacherById(user.id, id);
+    }
+
     @Put('/:id')
     async updateClass(@Req() { user }: IRequest, @Param() { id }: IdParam, @Body() body: UpdateClassDto) {
         return this.classService.updateClass(user.id, id, body);
