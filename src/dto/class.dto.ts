@@ -40,5 +40,9 @@ export class UpdateClassDto {
 
     @IsOptional()
     @IsBoolean()
+    hidden: boolean;
+
+    @IsOptional()
+    @IsBoolean()
     requirePermission: boolean;
 }
