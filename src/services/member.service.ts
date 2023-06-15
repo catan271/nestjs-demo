@@ -33,7 +33,7 @@ export class MemberService {
             .innerJoinAndSelect('classStudent.user', 'user')
             .where({ classId })
             .orderBy({
-                id: 'DESC',
+                'classStudent.id': 'DESC',
             })
             .take(take)
             .skip(skip);
