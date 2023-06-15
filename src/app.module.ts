@@ -15,6 +15,8 @@ import { TeacherMemberController } from './controllers/teacher/member.controller
 import { MemberService } from './services/member.service';
 import { TeacherQuizController } from './controllers/teacher/quiz.controller';
 import { QuizService } from './services/quiz.service';
+import { StudentClassController } from './controllers/student/class.controller';
+import { StudentQuizController } from './controllers/student/quiz.controller';
 
 @Module({
     imports: [AuthModule, ConfigModule.forRoot(), TypeOrmModule.forRoot(options), TypeOrmModule.forFeature(entities)],
@@ -25,6 +27,8 @@ import { QuizService } from './services/quiz.service';
         TeacherClassController,
         TeacherMemberController,
         TeacherQuizController,
+        StudentClassController,
+        StudentQuizController,
     ],
     providers: [ConfigService, UserService, ClassService, MemberService, QuizService],
 })

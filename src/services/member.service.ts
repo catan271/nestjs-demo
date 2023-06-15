@@ -32,6 +32,9 @@ export class MemberService {
             .createQueryBuilder('classStudent')
             .innerJoinAndSelect('classStudent.user', 'user')
             .where({ classId })
+            .orderBy({
+                id: 'DESC',
+            })
             .take(take)
             .skip(skip);
         if (search) {

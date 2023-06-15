@@ -69,6 +69,9 @@ export class UserService {
         search = '%' + search.replace(/\s+/g, '%') + '%';
         const [records, total] = await this.userRepository.findAndCount({
             where: [{ email: ILike(search) }, { givenName: ILike(search) }, { familyName: ILike(search) }],
+            order: {
+                id: 'desc',
+            },
             take,
             skip,
         });

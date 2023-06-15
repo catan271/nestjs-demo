@@ -17,6 +17,7 @@ export const errors = {
     // Classes
     CLASS_NUMBER_TAKEN: 'Mã lớp đã được sử dụng',
     DELETE_SELF: 'Không thể xóa chính mình khỏi lớp',
+    ALREADY_IN_CLASS: 'Đã có trong lớp này',
 
     // Members
     MEMBER_ALREADY_IN_CLASS: 'Thành viên đã trong lớp',

@@ -5,7 +5,7 @@ import { In, Not, Repository } from 'typeorm';
 import { ClassStudent } from '../database/entities/classStudent.entity';
 import { IdsDto, QueryDto } from '../dto/common.dto';
 import { Class } from '../database/entities/class.entity';
-import { CreateClassDto, UpdateClassDto } from '../dto/class.dto';
+import { CreateClassDto, JoinClassDto, UpdateClassDto } from '../dto/class.dto';
 import { errors } from '../constants/message.constant';
 
 @Injectable()
@@ -21,10 +21,34 @@ export class ClassService {
 
     async getListClassesOfTeacher(userId: number, { search = '', take, skip }: QueryDto) {
         const query = this.classTeacherRepository
-            .createQueryBuilder('teacherClass')
-            .innerJoinAndSelect('teacherClass.class', 'class')
+            .createQueryBuilder('classTeacher')
+            .innerJoinAndSelect('classTeacher.class', 'class')
             .where({
                 userId,
+            })
+            .orderBy({
+                id: 'DESC',
+            })
+            .take(take)
+            .skip(skip);
+        if (search) {
+            search = '%' + search.replace(/\s+/g, '%') + '%';
+            query.andWhere('(UPPER(class.name) LIKE UPPER(:search) OR class.classNumber LIKE :search)', { search });
+        }
+        const [records, total] = await query.getManyAndCount();
+
+        return { take, skip, total, records };
+    }
+
+    async getListClassesOfStudent(userId: number, { search = '', take, skip }: QueryDto) {
+        const query = this.classStudentRepository
+            .createQueryBuilder('classStudent')
+            .innerJoinAndSelect('classStudent.class', 'class')
+            .where({
+                userId,
+            })
+            .orderBy({
+                id: 'DESC',
             })
             .take(take)
             .skip(skip);
@@ -52,7 +76,12 @@ export class ClassService {
     async getClassOfStudentById(userId: number, classId: number) {
         const _class = await this.classRepository
             .createQueryBuilder('class')
-            .innerJoin('class.classStudents', 'classStudent', 'classStudent.userId = :userId', { userId })
+            .innerJoin(
+                'class.classStudents',
+                'classStudent',
+                'classStudent.userId = :userId AND classStudent.waiting = 0',
+                { userId },
+            )
             .where({ id: classId })
             .getOne();
         if (!_class) {
@@ -95,5 +124,28 @@ export class ClassService {
         });
         const classIds = teacherClasses.map((e) => e.classId);
         return this.classRepository.delete(classIds);
+    }
+
+    async joinClass(userId: number, { classNumber }: JoinClassDto) {
+        const _class = await this.classRepository.findOneBy({ classNumber });
+
+        if (!_class) {
+            throw new HttpException(errors.NOT_FOUND, HttpStatus.BAD_REQUEST);
+        }
+        if (await this.classStudentRepository.findBy({ userId, classId: _class.id })) {
+            throw new HttpException(errors.ALREADY_IN_CLASS, HttpStatus.BAD_REQUEST);
+        }
+
+        return this.classStudentRepository.save(
+            new ClassStudent({
+                userId,
+                waiting: !_class.requirePermission,
+                class: _class,
+            }),
+        );
+    }
+
+    async leaveClass(userId: number, classId: number) {
+        return this.classStudentRepository.delete({ userId, classId });
     }
 }

@@ -46,3 +46,8 @@ export class UpdateClassDto {
     @IsBoolean()
     requirePermission: boolean;
 }
+
+export class JoinClassDto {
+    @Matches(/\d{6}/)
+    classNumber: string;
+}

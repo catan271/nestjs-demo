@@ -54,6 +54,9 @@ export class QuizService {
         const [records, total] = await this.quizRepository
             .createQueryBuilder('quiz')
             .where({ classId })
+            .orderBy({
+                id: 'DESC',
+            })
             .take(take)
             .skip(skip)
             .getManyAndCount();
@@ -67,6 +70,9 @@ export class QuizService {
         const [records, total] = await this.quizRepository
             .createQueryBuilder('quiz')
             .where({ classId })
+            .orderBy({
+                id: 'DESC',
+            })
             .take(take)
             .skip(skip)
             .getManyAndCount();
@@ -79,6 +85,24 @@ export class QuizService {
             .createQueryBuilder('quiz')
             .innerJoin('quiz.class', 'class')
             .innerJoin('class.classTeachers', 'classTeacher', 'classTeacher.userId = :userId', { userId })
+            .where({ id })
+            .getOne();
+        if (!quiz) {
+            throw new HttpException(errors.NOT_FOUND, HttpStatus.NOT_FOUND);
+        }
+        return quiz;
+    }
+
+    async getQuizByIdStudent(userId: number, id: number) {
+        const quiz = await this.quizRepository
+            .createQueryBuilder('quiz')
+            .innerJoin('quiz.class', 'class')
+            .innerJoin(
+                'class.classStudents',
+                'classStudent',
+                'classStudent.userId = :userId AND classStudent.waiting = 0',
+                { userId },
+            )
             .where({ id })
             .getOne();
         if (!quiz) {
