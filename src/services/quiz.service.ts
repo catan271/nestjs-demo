@@ -68,10 +68,13 @@ export class QuizService {
     }
 
     async getListQuizzesOfClassStudent(userId: number, { classId, take = 10, skip = 0 }: GetListQuizzesDto) {
-        await this.classService.getClassOfStudentById(userId, classId);
+        const _class = await this.classService.getClassOfStudentById(userId, classId);
 
         const [records, total] = await this.quizRepository
             .createQueryBuilder('quiz')
+            .leftJoinAndSelect('quiz.studentAnswers', 'studentAnswer', 'studentAnswer.studentId = :studentId', {
+                studentId: _class.classStudents[0].id,
+            })
             .where({ classId })
             .orderBy({
                 'quiz.id': 'DESC',

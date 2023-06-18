@@ -76,7 +76,7 @@ export class ClassService {
     async getClassOfStudentById(userId: number, classId: number) {
         const _class = await this.classRepository
             .createQueryBuilder('class')
-            .innerJoin(
+            .innerJoinAndSelect(
                 'class.classStudents',
                 'classStudent',
                 'classStudent.userId = :userId AND classStudent.waiting = 0',
