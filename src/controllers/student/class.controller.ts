@@ -18,6 +18,11 @@ export class StudentClassController {
         return this.classService.getListClassesOfStudent(user.id, query);
     }
 
+    @Get('/:id')
+    async getClassById(@Req() { user }: IRequest, @Param() { id }: IdParam) {
+        return this.classService.getClassOfStudentById(user.id, id);
+    }
+
     @Post('/join')
     async joinClass(@Req() { user }: IRequest, @Body() body: JoinClassDto) {
         return this.classService.joinClass(user.id, body);
