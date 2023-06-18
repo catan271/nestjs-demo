@@ -4,6 +4,7 @@ import {
     CreateDateColumn,
     Entity,
     ManyToOne,
+    OneToMany,
     OneToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
@@ -11,7 +12,8 @@ import {
 import { Position, Question } from '../../dto/quiz.dto';
 import { instanceToInstance } from 'class-transformer';
 import { Class } from './class.entity';
-import { KeyEntity } from './key.entity';
+import { Key } from './key.entity';
+import { StudentAnswer } from './studentAnswer.entity';
 
 @Entity('quizzes')
 export class Quiz extends BaseEntity {
@@ -55,10 +57,15 @@ export class Quiz extends BaseEntity {
     })
     class: Class;
 
-    @OneToOne(() => KeyEntity, (key) => key.quiz, {
+    @OneToOne(() => Key, (key) => key.quiz, {
         cascade: true,
     })
-    key: KeyEntity;
+    key: Key;
+
+    @OneToMany(() => StudentAnswer, (studentAnswer) => studentAnswer.quiz, {
+        onDelete: 'CASCADE',
+    })
+    studentAnswers: StudentAnswer[];
 
     constructor(props: Partial<Quiz>) {
         super();

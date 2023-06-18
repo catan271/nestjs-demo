@@ -3,12 +3,15 @@ import { ClassService } from './class.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Quiz } from '../database/entities/quiz.entity';
 import { Repository } from 'typeorm';
-import { CreateQuizDto, GetListQuizzesDto, UpdateQuizDto } from '../dto/quiz.dto';
-import { KeyEntity } from '../database/entities/key.entity';
+import { CreateQuizDto, DoQuizDto, GetListQuizzesDto, UpdateQuizDto } from '../dto/quiz.dto';
+import { Key } from '../database/entities/key.entity';
 import { validateQuestion } from '../utils/validateQuestions.util';
 import { errors } from '../constants/message.constant';
 import dayjs from 'dayjs';
 import { IdsDto } from '../dto/common.dto';
+import { geolocationToDistance } from '../utils/geolocation.util';
+import { examineAnswers } from '../utils/examineAnswers.util';
+import { StudentAnswer } from '../database/entities/studentAnswer.entity';
 
 @Injectable()
 export class QuizService {
@@ -16,8 +19,8 @@ export class QuizService {
         private classService: ClassService,
         @InjectRepository(Quiz)
         private quizRepository: Repository<Quiz>,
-        @InjectRepository(KeyEntity)
-        private keyRepository: Repository<KeyEntity>,
+        @InjectRepository(StudentAnswer)
+        private studentAnswerRepository: Repository<StudentAnswer>,
     ) {}
 
     async createQuiz(userId: number, body: CreateQuizDto) {
@@ -38,7 +41,7 @@ export class QuizService {
             closeTime,
             open,
             questions,
-            key: new KeyEntity({
+            key: new Key({
                 keys,
             }),
         });
@@ -114,10 +117,29 @@ export class QuizService {
     async getQuizWithKeyById(userId: number, id: number) {
         const quiz = await this.quizRepository
             .createQueryBuilder('quiz')
-            .innerJoin('quiz.class', 'class')
-            .innerJoin('class.classTeachers', 'classTeacher', 'classTeacher.userId = :userId', { userId })
-            .where({ id })
+            .innerJoinAndSelect('quiz.class', 'class')
+            .innerJoinAndSelect('class.classTeachers', 'classTeacher', 'classTeacher.userId = :userId', { userId })
             .leftJoinAndSelect('quiz.key', 'key')
+            .where({ id })
+            .getOne();
+        if (!quiz) {
+            throw new HttpException(errors.NOT_FOUND, HttpStatus.NOT_FOUND);
+        }
+        return quiz;
+    }
+
+    async getQuizWithKeyByIdStudent(userId: number, id: number) {
+        const quiz = await this.quizRepository
+            .createQueryBuilder('quiz')
+            .innerJoin('quiz.class', 'class')
+            .innerJoin(
+                'class.classStudents',
+                'classStudent',
+                'classStudent.userId = :userId AND classStudent.waiting = 0',
+                { userId },
+            )
+            .leftJoinAndSelect('quiz.key', 'key')
+            .where({ id })
             .getOne();
         if (!quiz) {
             throw new HttpException(errors.NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -161,5 +183,31 @@ export class QuizService {
             .getMany();
         const quizIds = validQuizzes.map((e) => e.id);
         return this.quizRepository.delete(quizIds);
+    }
+
+    async doQuiz(userId: number, quizId: number, { position, answers }: DoQuizDto) {
+        const quiz = await this.getQuizWithKeyByIdStudent(userId, quizId);
+
+        if (!quiz.position) {
+            throw new HttpException(errors.MISSING_POSITION, HttpStatus.CONFLICT);
+        }
+        if (geolocationToDistance(position, quiz.position) > 80) {
+            throw new HttpException(errors.TOO_DISTANCED, HttpStatus.BAD_REQUEST);
+        }
+        const points = examineAnswers(answers, quiz.key.keys);
+        if (points === -1) {
+            throw new HttpException(errors.INVALID_QUESTIONS_AND_KEYS, HttpStatus.BAD_REQUEST);
+        }
+
+        return this.studentAnswerRepository.save(
+            new StudentAnswer({
+                quizId,
+                studentId: quiz.class.classStudents[0].id,
+                position,
+                answers,
+                correct: points,
+                total: quiz.questions.length,
+            }),
+        );
     }
 }

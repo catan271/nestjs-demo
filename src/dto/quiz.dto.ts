@@ -14,20 +14,20 @@ export class Question {
     question: string;
 
     @Allow()
-    answers: any;
+    answers: Answer[];
 }
-export class Key {
+export class KeyDto {
     @IsNumber()
     questionId: number;
 
     @Allow()
-    answerId: any;
+    answerId: number;
 
     @Allow()
-    answerIds: any;
+    answerIds: number[];
 
     @Allow()
-    answer: any;
+    answer: string;
 }
 
 export class Answer {
@@ -43,19 +43,19 @@ export class QuestionSingleChoice extends Question {
     @Type(() => Answer)
     answers: Answer[];
 }
-export class KeySingleChoice extends Key {
+export class KeySingleChoice extends KeyDto {
     @IsNumber()
     keyAnswerId: number;
 }
 
 export class QuestionMultipleChoices extends QuestionSingleChoice {}
-export class KeyMultipleChoices extends Key {
+export class KeyMultipleChoices extends KeyDto {
     @IsNumber({}, { each: true })
     answerIds: number[];
 }
 
 export class QuestionFillIn extends Question {}
-export class KeyFillIn extends Key {
+export class KeyFillIn extends KeyDto {
     @IsString()
     answer: string;
 }
@@ -91,8 +91,8 @@ export class CreateQuizDto {
     questions: Question[];
 
     @ValidateNested({ each: true })
-    @Type(() => Key)
-    keys: Key[];
+    @Type(() => KeyDto)
+    keys: KeyDto[];
 }
 
 export class UpdateQuizDto {
@@ -120,11 +120,31 @@ export class UpdateQuizDto {
 
     @IsOptional()
     @ValidateNested({ each: true })
-    @Type(() => Key)
-    keys: Key[];
+    @Type(() => KeyDto)
+    keys: KeyDto[];
 }
 
 export class GetListQuizzesDto extends QueryDto {
     @IsNumber()
     classId: number;
+}
+
+export class StudentAnswerDto extends KeyDto {
+    correct: number[];
+    wrong: number[];
+    missing: number[];
+    correctAnswer: string;
+}
+
+export class DoQuizDto {
+    @IsNumber()
+    quizId: number;
+
+    @ValidateNested()
+    @Type(() => Position)
+    position: Position;
+
+    @ValidateNested({ each: true })
+    @Type(() => StudentAnswerDto)
+    answers: StudentAnswerDto[];
 }

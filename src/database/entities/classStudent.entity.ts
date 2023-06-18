@@ -5,11 +5,13 @@ import {
     CreateDateColumn,
     Entity,
     ManyToOne,
+    OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Class } from './class.entity';
+import { StudentAnswer } from './studentAnswer.entity';
 
 @Entity('class_students')
 export class ClassStudent extends BaseEntity {
@@ -47,6 +49,11 @@ export class ClassStudent extends BaseEntity {
         onDelete: 'CASCADE',
     })
     user: User;
+
+    @OneToMany(() => StudentAnswer, (studentAnswer) => studentAnswer.classStudent, {
+        cascade: true,
+    })
+    studentAnswers: StudentAnswer[];
 
     constructor(props: Partial<ClassStudent>) {
         super();

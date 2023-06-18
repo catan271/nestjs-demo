@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ClassService } from '../../services/class.service';
 import { IRequest } from '../../dto/auth.dto';
 import { IdParam, QueryDto } from '../../dto/common.dto';
@@ -19,8 +19,8 @@ export class StudentClassController {
     }
 
     @Post('/join')
-    async joinClass(@Req() { user }: IRequest, @Query() query: JoinClassDto) {
-        return this.classService.joinClass(user.id, query);
+    async joinClass(@Req() { user }: IRequest, @Body() body: JoinClassDto) {
+        return this.classService.joinClass(user.id, body);
     }
 
     @Delete('/:id')

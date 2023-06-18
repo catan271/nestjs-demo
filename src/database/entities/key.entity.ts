@@ -8,12 +8,12 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
-import { Key } from '../../dto/quiz.dto';
+import { KeyDto } from '../../dto/quiz.dto';
 import { instanceToInstance } from 'class-transformer';
 import { Quiz } from './quiz.entity';
 
 @Entity('keys')
-export class KeyEntity extends BaseEntity {
+export class Key extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -21,7 +21,7 @@ export class KeyEntity extends BaseEntity {
     quizId: number;
 
     @Column('json')
-    keys: Key[];
+    keys: KeyDto[];
 
     @CreateDateColumn()
     createdAt: Date;
@@ -35,7 +35,7 @@ export class KeyEntity extends BaseEntity {
     @JoinColumn()
     quiz: Quiz;
 
-    constructor(props: Partial<KeyEntity>) {
+    constructor(props: Partial<Key>) {
         super();
         Object.assign(this, props);
     }

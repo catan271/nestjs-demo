@@ -1,5 +1,5 @@
 import {
-    Key,
+    KeyDto,
     KeyFillIn,
     KeyMultipleChoices,
     KeySingleChoice,
@@ -11,7 +11,7 @@ import {
 import { questionTypes } from '../constants/questionTypes.constant';
 import { plainToInstance } from 'class-transformer';
 
-export const validateQuestion = (questions: Question[], keys?: Key[]) => {
+export const validateQuestion = (questions: Question[], keys?: KeyDto[]) => {
     if (questions.length !== keys?.length) {
         return false;
     }
@@ -42,6 +42,7 @@ export const validateQuestion = (questions: Question[], keys?: Key[]) => {
         } else if (questions[i].type == questionTypes.FILL_IN.value) {
             questions[i] = plainToInstance(QuestionFillIn, questions[i]);
             keys[i] = plainToInstance(KeyFillIn, keys[i]);
+            keys[i].answer = keys[i].answer.trim();
         } else {
             return false;
         }

@@ -1,10 +1,10 @@
-import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { roles } from '../../constants/roles.constant';
 import { QuizService } from '../../services/quiz.service';
 import { IRequest } from '../../dto/auth.dto';
-import { GetListQuizzesDto } from '../../dto/quiz.dto';
+import { DoQuizDto, GetListQuizzesDto } from '../../dto/quiz.dto';
 import { IdParam } from '../../dto/common.dto';
 
 @Controller('student/quizzes')
@@ -21,5 +21,10 @@ export class StudentQuizController {
     @Get('/:id')
     async getQuizById(@Req() { user }: IRequest, @Param() { id }: IdParam) {
         return this.quizService.getQuizByIdStudent(user.id, id);
+    }
+
+    @Post('/:id')
+    async doQuiz(@Req() { user }: IRequest, @Param() { id }: IdParam, @Body() body: DoQuizDto) {
+        return this.quizService.doQuiz(user.id, id, body);
     }
 }
