@@ -48,7 +48,7 @@ export class ClassService {
                 userId,
             })
             .orderBy({
-                id: 'DESC',
+                'classStudent.id': 'DESC',
             })
             .take(take)
             .skip(skip);

@@ -25,6 +25,9 @@ export class MemberService {
             where: {
                 classId,
             },
+            order: {
+                id: 'ASC',
+            },
             relations: ['user'],
         });
 

@@ -58,7 +58,7 @@ export class QuizService {
             .createQueryBuilder('quiz')
             .where({ classId })
             .orderBy({
-                id: 'DESC',
+                'quiz.id': 'DESC',
             })
             .take(take)
             .skip(skip)
