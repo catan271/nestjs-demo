@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { ClassTeacher } from './classTeacher.entity';
 import { Quiz } from './quiz.entity';
+import { ClassStudent } from './classStudent.entity';
 
 @Entity('classes')
 export class Class extends BaseEntity {
@@ -46,7 +47,7 @@ export class Class extends BaseEntity {
     })
     classTeachers: ClassTeacher[];
 
-    @OneToMany(() => ClassTeacher, (classStudent) => classStudent.class, {
+    @OneToMany(() => ClassStudent, (classStudent) => classStudent.class, {
         cascade: true,
     })
     classStudents: ClassTeacher[];

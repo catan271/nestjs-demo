@@ -64,7 +64,7 @@ export class ClassService {
     async getClassOfTeacherById(userId: number, classId: number) {
         const _class = await this.classRepository
             .createQueryBuilder('class')
-            .innerJoin('class.classTeachers', 'classTeacher', 'classTeacher.userId = :userId', { userId })
+            .innerJoinAndSelect('class.classTeachers', 'classTeacher', 'classTeacher.userId = :userId', { userId })
             .where({ id: classId })
             .getOne();
         if (!_class) {
@@ -132,14 +132,14 @@ export class ClassService {
         if (!_class) {
             throw new HttpException(errors.NOT_FOUND, HttpStatus.BAD_REQUEST);
         }
-        if (await this.classStudentRepository.findBy({ userId, classId: _class.id })) {
+        if (await this.classStudentRepository.findOneBy({ userId, classId: _class.id })) {
             throw new HttpException(errors.ALREADY_IN_CLASS, HttpStatus.BAD_REQUEST);
         }
 
         return this.classStudentRepository.save(
             new ClassStudent({
                 userId,
-                waiting: !_class.requirePermission,
+                waiting: _class.requirePermission,
                 class: _class,
             }),
         );
