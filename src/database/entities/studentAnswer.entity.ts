@@ -10,7 +10,7 @@ export class StudentAnswer extends BaseEntity {
     id: number;
 
     @Column('int')
-    studentId: number;
+    classStudentId: number;
 
     @Column('int')
     quizId: number;

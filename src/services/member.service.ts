@@ -80,9 +80,7 @@ export class MemberService {
             .createQueryBuilder('classStudent')
             .innerJoin('classStudent.class', 'class')
             .innerJoin('class.classTeachers', 'classTeacher', 'classTeacher.userId = :userId', { userId })
-            .where({
-                'classStudent.id': id,
-            })
+            .where({ id })
             .getOne();
 
         if (!student) {

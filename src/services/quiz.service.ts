@@ -134,8 +134,8 @@ export class QuizService {
     async getQuizWithKeyByIdStudent(userId: number, id: number) {
         const quiz = await this.quizRepository
             .createQueryBuilder('quiz')
-            .innerJoin('quiz.class', 'class')
-            .innerJoin(
+            .innerJoinAndSelect('quiz.class', 'class')
+            .innerJoinAndSelect(
                 'class.classStudents',
                 'classStudent',
                 'classStudent.userId = :userId AND classStudent.waiting = 0',
@@ -190,9 +190,13 @@ export class QuizService {
 
     async doQuiz(userId: number, quizId: number, { position, answers }: DoQuizDto) {
         const quiz = await this.getQuizWithKeyByIdStudent(userId, quizId);
+        const classStudentId = quiz.class.classStudents[0].id;
 
         if (!quiz.open || dayjs(quiz.closeTime).isBefore(dayjs())) {
-            throw new HttpException(errors.INVALID_QUESTIONS_AND_KEYS, HttpStatus.BAD_REQUEST);
+            throw new HttpException(errors.QUIZ_CLOSED, HttpStatus.BAD_REQUEST);
+        }
+        if (await this.studentAnswerRepository.findOneBy({ classStudentId, quizId })) {
+            throw new HttpException(errors.QUIZ_DONE, HttpStatus.BAD_REQUEST);
         }
         if (!quiz.position) {
             throw new HttpException(errors.MISSING_POSITION, HttpStatus.CONFLICT);
@@ -208,7 +212,7 @@ export class QuizService {
         return this.studentAnswerRepository.save(
             new StudentAnswer({
                 quizId,
-                studentId: quiz.class.classStudents[0].id,
+                classStudentId,
                 position,
                 answers,
                 correct: points,

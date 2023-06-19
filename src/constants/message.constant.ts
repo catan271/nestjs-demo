@@ -27,4 +27,5 @@ export const errors = {
     MISSING_POSITION: 'Thiếu tọa độ',
     TOO_DISTANCED: 'Vị trí ở quá xa nơi điểm danh',
     QUIZ_CLOSED: 'Quiz đã đóng',
+    QUIZ_DONE: 'Đã nộp bài',
 };

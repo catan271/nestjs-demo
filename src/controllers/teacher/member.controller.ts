@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { MemberService } from '../../services/member.service';
 import { AddMemberDto, GetListMembersDto, RemoveMembersDto } from '../../dto/member.dto';
 import { IdParam, QueryDto } from '../../dto/common.dto';
@@ -29,7 +29,7 @@ export class TeacherMemberController {
         return this.memberService.addMemberToClass(user.id, body);
     }
 
-    @Put('/:id')
+    @Patch('/:id')
     async acceptStudent(@Req() { user }: IRequest, @Param() { id }: IdParam) {
         return this.memberService.acceptStudent(user.id, id);
     }
