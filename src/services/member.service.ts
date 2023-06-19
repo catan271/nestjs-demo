@@ -36,6 +36,7 @@ export class MemberService {
             .innerJoinAndSelect('classStudent.user', 'user')
             .where({ classId })
             .orderBy({
+                'classStudent.waiting': 'DESC',
                 'classStudent.id': 'DESC',
             })
             .take(take)
@@ -72,6 +73,24 @@ export class MemberService {
         }
 
         return { message: 'ok' };
+    }
+
+    async acceptStudent(userId: number, id: number) {
+        const student = await this.classStudentRepository
+            .createQueryBuilder('classStudent')
+            .innerJoin('classStudent.class', 'class')
+            .innerJoin('class.classTeachers', 'classTeacher', 'classTeacher.userId = :userId', { userId })
+            .where({
+                'classStudent.id': id,
+            })
+            .getOne();
+
+        if (!student) {
+            throw new HttpException(errors.NOT_FOUND, HttpStatus.NOT_FOUND);
+        }
+
+        student.waiting = false;
+        return this.classStudentRepository.save(student);
     }
 
     async removeMembersFromClass(teacherId: number, { classId, ids }: RemoveMembersDto) {
