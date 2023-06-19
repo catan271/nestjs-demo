@@ -1,55 +1,48 @@
-import {
-    KeyDto,
-    KeyFillIn,
-    KeyMultipleChoices,
-    KeySingleChoice,
-    Question,
-    QuestionFillIn,
-    QuestionMultipleChoices,
-    QuestionSingleChoice,
-} from '../dto/quiz.dto';
+import { KeyDto, Question } from '../dto/quiz.dto';
 import { questionTypes } from '../constants/questionTypes.constant';
-import { plainToInstance } from 'class-transformer';
 
-export const validateQuestion = (questions: Question[], keys?: KeyDto[]) => {
-    try {
-        if (questions.length !== keys?.length) {
-            return false;
-        }
-        questions.sort((a, b) => a.questionId - b.questionId);
-        keys.sort((a, b) => a.questionId - b.questionId);
-        for (let i = 0; i < questions.length; i++) {
-            if (questions[i].questionId !== keys[i].questionId) {
-                return false;
-            }
-            if (questions[i].type == questionTypes.SINGLE_CHOICE.value) {
-                const question = plainToInstance(QuestionSingleChoice, questions[i]);
-                const key = plainToInstance(KeySingleChoice, keys[i]);
-                if (!question.answers.map((e) => e.answerId).includes(key.answerId)) {
-                    return false;
-                }
-                questions[i] = question;
-                keys[i] = key;
-            } else if (questions[i].type == questionTypes.MULTIPLE_CHOICE.value) {
-                const question = plainToInstance(QuestionMultipleChoices, questions[i]);
-                const key = plainToInstance(KeyMultipleChoices, keys[i]);
-                for (const answerId of key.answerIds) {
-                    if (!question.answers.map((e) => e.answerId).includes(answerId)) {
-                        return false;
-                    }
-                }
-                questions[i] = question;
-                keys[i] = key;
-            } else if (questions[i].type == questionTypes.FILL_IN.value) {
-                questions[i] = plainToInstance(QuestionFillIn, questions[i]);
-                keys[i] = plainToInstance(KeyFillIn, keys[i]);
-                keys[i].answer = keys[i].answer.trim();
-            } else {
-                return false;
-            }
-        }
-        return true;
-    } catch (e) {
+export const validateQuestion = async (questions: Question[], keys?: KeyDto[]) => {
+    if (questions.length !== keys?.length) {
         return false;
     }
+    questions.sort((a, b) => a.questionId - b.questionId);
+    keys.sort((a, b) => a.questionId - b.questionId);
+    const usedIds = new Set<number>();
+    for (let i = 0; i < questions.length; i++) {
+        if (questions[i].questionId !== keys[i].questionId || usedIds.has(questions[i].questionId)) {
+            return false;
+        }
+        usedIds.add(questions[i].questionId);
+        if (questions[i].type == questionTypes.SINGLE_CHOICE.value) {
+            if (!keys[i].answerId) {
+                return false;
+            }
+            delete keys[i].answer;
+            delete keys[i].answerIds;
+            if (!questions[i].answers.map((e) => e.answerId).includes(keys[i].answerId as number)) {
+                return false;
+            }
+        } else if (questions[i].type == questionTypes.MULTIPLE_CHOICE.value) {
+            if (!keys[i].answerIds) {
+                return false;
+            }
+            delete keys[i].answer;
+            delete keys[i].answerId;
+            for (const answerId of keys[i].answerIds as number[]) {
+                if (!questions[i].answers.map((e) => e.answerId).includes(answerId)) {
+                    return false;
+                }
+            }
+        } else if (questions[i].type == questionTypes.FILL_IN.value) {
+            if (!keys[i].answer) {
+                return false;
+            }
+            delete keys[i].answerId;
+            delete keys[i].answerIds;
+            keys[i].answer = (keys[i].answer as string).trim();
+        } else {
+            return false;
+        }
+    }
+    return true;
 };

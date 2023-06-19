@@ -20,6 +20,9 @@ export class Quiz extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
+    @Column('varchar')
+    name: string;
+
     @Column('int')
     classId: number;
 

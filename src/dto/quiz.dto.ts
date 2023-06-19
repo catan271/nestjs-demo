@@ -20,14 +20,17 @@ export class KeyDto {
     @IsNumber()
     questionId: number;
 
-    @Allow()
-    answerId: number;
+    @IsOptional()
+    @IsNumber()
+    answerId?: number;
 
-    @Allow()
-    answerIds: number[];
+    @IsOptional()
+    @IsNumber({}, { each: true })
+    answerIds?: number[];
 
-    @Allow()
-    answer: string;
+    @IsOptional()
+    @IsString()
+    answer?: string;
 }
 
 export class Answer {
@@ -72,6 +75,9 @@ export class CreateQuizDto {
     @IsNumber()
     classId: number;
 
+    @IsString()
+    name: string;
+
     @ValidateNested()
     @Type(() => Position)
     position: Position;
@@ -98,6 +104,10 @@ export class CreateQuizDto {
 }
 
 export class UpdateQuizDto {
+    @IsOptional()
+    @IsString()
+    name: string;
+
     @IsOptional()
     @ValidateNested()
     @Type(() => Position)
@@ -141,9 +151,6 @@ export class StudentAnswerDto extends KeyDto {
 }
 
 export class DoQuizDto {
-    @IsNumber()
-    quizId: number;
-
     @ValidateNested()
     @Type(() => Position)
     position: Position;

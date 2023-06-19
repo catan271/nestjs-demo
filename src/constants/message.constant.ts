@@ -26,6 +26,7 @@ export const errors = {
     INVALID_QUESTIONS_AND_KEYS: 'Câu hỏi và đáp án không hợp lệ',
     MISSING_POSITION: 'Thiếu tọa độ',
     TOO_DISTANCED: 'Vị trí ở quá xa nơi điểm danh',
+    INVALID_ANSWER: 'Câu trả lời không hợp lệ',
     QUIZ_CLOSED: 'Quiz đã đóng',
     QUIZ_DONE: 'Đã nộp bài',
 };

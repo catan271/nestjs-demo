@@ -23,34 +23,6 @@ export class QuizService {
         private studentAnswerRepository: Repository<StudentAnswer>,
     ) {}
 
-    async createQuiz(userId: number, body: CreateQuizDto) {
-        const { classId, questions, shuffled, closeTime, open, position, keys } = body;
-
-        await this.classService.getClassOfTeacherById(userId, classId);
-        if (!validateQuestion(questions, keys)) {
-            throw new HttpException(errors.INVALID_QUESTIONS_AND_KEYS, HttpStatus.BAD_REQUEST);
-        }
-        if (open && !position) {
-            throw new HttpException(errors.MISSING_POSITION, HttpStatus.BAD_REQUEST);
-        }
-
-        const quiz = new Quiz({
-            classId,
-            position,
-            shuffled,
-            closeTime,
-            open,
-            questions,
-            key: new Key({
-                keys,
-            }),
-        });
-        if (open && dayjs(closeTime).isBefore(dayjs())) {
-            quiz.closeTime = null;
-        }
-        return this.quizRepository.save(quiz);
-    }
-
     async getListQuizzesOfClass(userId: number, { classId, take = 10, skip = 0 }: GetListQuizzesDto) {
         await this.classService.getClassOfTeacherById(userId, classId);
 
@@ -72,7 +44,7 @@ export class QuizService {
 
         const [records, total] = await this.quizRepository
             .createQueryBuilder('quiz')
-            .leftJoinAndSelect('quiz.studentAnswers', 'studentAnswer', 'studentAnswer.studentId = :studentId', {
+            .leftJoinAndSelect('quiz.studentAnswers', 'studentAnswer', 'studentAnswer.classStudent = :studentId', {
                 studentId: _class.classStudents[0].id,
             })
             .where({ classId })
@@ -92,6 +64,7 @@ export class QuizService {
             .innerJoin('quiz.class', 'class')
             .innerJoin('class.classTeachers', 'classTeacher', 'classTeacher.userId = :userId', { userId })
             .innerJoinAndSelect('quiz.key', 'key')
+            .leftJoinAndSelect('quiz.studentAnswers', 'studentAnswer')
             .where({ id })
             .getOne();
         if (!quiz) {
@@ -137,27 +110,44 @@ export class QuizService {
         return quiz;
     }
 
+    async createQuiz(userId: number, body: CreateQuizDto) {
+        const { keys, ...data } = body;
+
+        await this.classService.getClassOfTeacherById(userId, data.classId);
+
+        const quiz = new Quiz({
+            ...data,
+            key: new Key({
+                keys,
+            }),
+        });
+        if (!validateQuestion(quiz.questions, keys)) {
+            throw new HttpException(errors.INVALID_QUESTIONS_AND_KEYS, HttpStatus.BAD_REQUEST);
+        }
+        if (quiz.open && !data.position) {
+            throw new HttpException(errors.MISSING_POSITION, HttpStatus.BAD_REQUEST);
+        }
+        if (quiz.open && dayjs(quiz.closeTime).isBefore(dayjs())) {
+            quiz.closeTime = null;
+        }
+        return this.quizRepository.save(quiz);
+    }
+
     async updateQuiz(userId: number, id: number, body: UpdateQuizDto) {
-        const { questions, shuffled, closeTime, open, position, keys } = body;
+        const { keys, ...data } = body;
 
         const quiz = await this.getQuizById(userId, id);
-        quiz.shuffled = shuffled;
-        quiz.closeTime = closeTime;
-        if (questions) {
-            if (!validateQuestion(questions, keys)) {
+        Object.assign(quiz, data);
+        if (data.questions) {
+            if (!validateQuestion(quiz.questions, keys)) {
                 throw new HttpException(errors.INVALID_QUESTIONS_AND_KEYS, HttpStatus.BAD_REQUEST);
             }
-            quiz.questions = questions;
             quiz.key.keys = keys;
         }
-        if (open) {
-            if (!position) {
-                throw new HttpException(errors.MISSING_POSITION, HttpStatus.BAD_REQUEST);
-            }
-            quiz.open = open;
-            quiz.position = position;
+        if (quiz.open && !data.position) {
+            throw new HttpException(errors.MISSING_POSITION, HttpStatus.BAD_REQUEST);
         }
-        if (open && dayjs(closeTime).isBefore(dayjs())) {
+        if (quiz.open && dayjs(quiz.closeTime).isBefore(dayjs())) {
             quiz.closeTime = null;
         }
 
@@ -168,8 +158,8 @@ export class QuizService {
         const validQuizzes = await this.quizRepository
             .createQueryBuilder('quiz')
             .innerJoin('quiz.class', 'class')
-            .innerJoin('class.classTeachers', 'classTeacher', 'classTeacher.id = :userId', { userId })
-            .where('id IN(:ids)', { ids })
+            .innerJoin('class.classTeachers', 'classTeacher', 'classTeacher.userId = :userId', { userId })
+            .where('quiz.id IN(:ids)', { ids })
             .getMany();
         const quizIds = validQuizzes.map((e) => e.id);
         return this.quizRepository.delete(quizIds);
@@ -193,7 +183,7 @@ export class QuizService {
         }
         const points = examineAnswers(answers, quiz.key.keys);
         if (points === -1) {
-            throw new HttpException(errors.INVALID_QUESTIONS_AND_KEYS, HttpStatus.BAD_REQUEST);
+            throw new HttpException(errors.INVALID_ANSWER, HttpStatus.BAD_REQUEST);
         }
 
         return this.studentAnswerRepository.save(
