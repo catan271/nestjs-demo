@@ -7,11 +7,11 @@ import { CreateQuizDto, DoQuizDto, GetListQuizzesDto, UpdateQuizDto } from '../d
 import { Key } from '../database/entities/key.entity';
 import { validateQuestion } from '../utils/validateQuestions.util';
 import { errors } from '../constants/message.constant';
-import dayjs from 'dayjs';
 import { IdsDto } from '../dto/common.dto';
 import { geolocationToDistance } from '../utils/geolocation.util';
 import { examineAnswers } from '../utils/examineAnswers.util';
 import { StudentAnswer } from '../database/entities/studentAnswer.entity';
+import { dayjs } from '../utils/dayjs.util';
 
 @Injectable()
 export class QuizService {
