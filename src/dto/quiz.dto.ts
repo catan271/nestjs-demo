@@ -76,10 +76,12 @@ export class CreateQuizDto {
     @Type(() => Position)
     position: Position;
 
+    @IsOptional()
     @IsBoolean()
     shuffled: boolean;
 
     @IsOptional()
+    @Type(() => Date)
     @IsDate()
     closeTime: Date;
 
@@ -106,6 +108,7 @@ export class UpdateQuizDto {
     shuffled: boolean;
 
     @IsOptional()
+    @Type(() => Date)
     @IsDate()
     closeTime: Date;
 
@@ -125,6 +128,7 @@ export class UpdateQuizDto {
 }
 
 export class GetListQuizzesDto extends QueryDto {
+    @Type(() => Number)
     @IsNumber()
     classId: number;
 }

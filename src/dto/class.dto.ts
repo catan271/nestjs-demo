@@ -40,11 +40,13 @@ export class UpdateClassDto {
 
     @IsOptional()
     @IsBoolean()
-    hidden: boolean;
+    requirePermission: boolean;
+}
 
+export class HideShowClassDto {
     @IsOptional()
     @IsBoolean()
-    requirePermission: boolean;
+    hidden: boolean;
 }
 
 export class JoinClassDto {

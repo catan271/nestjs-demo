@@ -1,11 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ClassService } from '../../services/class.service';
 import { IRequest } from '../../dto/auth.dto';
 import { IdParam, QueryDto } from '../../dto/common.dto';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { roles } from '../../constants/roles.constant';
-import { JoinClassDto } from '../../dto/class.dto';
+import { HideShowClassDto, JoinClassDto } from '../../dto/class.dto';
 
 @Controller('student/classes')
 @UseGuards(RolesGuard)
@@ -26,6 +26,11 @@ export class StudentClassController {
     @Post('/join')
     async joinClass(@Req() { user }: IRequest, @Body() body: JoinClassDto) {
         return this.classService.joinClass(user.id, body);
+    }
+
+    @Patch('/:id')
+    async hideShowClass(@Req() { user }: IRequest, @Param() { id }: IdParam, @Body() body: HideShowClassDto) {
+        return this.classService.hideShowClassStudent(user.id, id, body);
     }
 
     @Delete('/:id')

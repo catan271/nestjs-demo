@@ -91,6 +91,7 @@ export class QuizService {
             .createQueryBuilder('quiz')
             .innerJoin('quiz.class', 'class')
             .innerJoin('class.classTeachers', 'classTeacher', 'classTeacher.userId = :userId', { userId })
+            .innerJoinAndSelect('quiz.key', 'key')
             .where({ id })
             .getOne();
         if (!quiz) {
@@ -109,20 +110,6 @@ export class QuizService {
                 'classStudent.userId = :userId AND classStudent.waiting = 0',
                 { userId },
             )
-            .where({ id })
-            .getOne();
-        if (!quiz) {
-            throw new HttpException(errors.NOT_FOUND, HttpStatus.NOT_FOUND);
-        }
-        return quiz;
-    }
-
-    async getQuizWithKeyById(userId: number, id: number) {
-        const quiz = await this.quizRepository
-            .createQueryBuilder('quiz')
-            .innerJoinAndSelect('quiz.class', 'class')
-            .innerJoinAndSelect('class.classTeachers', 'classTeacher', 'classTeacher.userId = :userId', { userId })
-            .leftJoinAndSelect('quiz.key', 'key')
             .where({ id })
             .getOne();
         if (!quiz) {
@@ -164,7 +151,7 @@ export class QuizService {
             quiz.key.keys = keys;
         }
         if (open) {
-            if (position) {
+            if (!position) {
                 throw new HttpException(errors.MISSING_POSITION, HttpStatus.BAD_REQUEST);
             }
             quiz.open = open;

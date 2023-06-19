@@ -5,7 +5,7 @@ import { In, Not, Repository } from 'typeorm';
 import { ClassStudent } from '../database/entities/classStudent.entity';
 import { IdsDto, QueryDto } from '../dto/common.dto';
 import { Class } from '../database/entities/class.entity';
-import { CreateClassDto, JoinClassDto, UpdateClassDto } from '../dto/class.dto';
+import { CreateClassDto, HideShowClassDto, JoinClassDto, UpdateClassDto } from '../dto/class.dto';
 import { errors } from '../constants/message.constant';
 
 @Injectable()
@@ -115,6 +115,14 @@ export class ClassService {
         Object.assign(_class, body);
 
         return this.classRepository.save(_class);
+    }
+
+    async hideShowClassTeacher(userId: number, classId: number, { hidden }: HideShowClassDto) {
+        return this.classTeacherRepository.update({ userId, classId }, { hidden });
+    }
+
+    async hideShowClassStudent(userId: number, classId: number, { hidden }: HideShowClassDto) {
+        return this.classStudentRepository.update({ userId, classId }, { hidden });
     }
 
     async deleteClasses(userId: number, { ids }: IdsDto) {

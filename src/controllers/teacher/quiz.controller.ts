@@ -20,7 +20,7 @@ export class TeacherQuizController {
 
     @Get('/:id')
     async getQuizById(@Req() { user }: IRequest, @Param() { id }: IdParam) {
-        return this.quizService.getQuizWithKeyById(user.id, id);
+        return this.quizService.getQuizById(user.id, id);
     }
 
     @Post('/')

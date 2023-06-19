@@ -1,11 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { roles } from '../../constants/roles.constant';
 import { IRequest } from '../../dto/auth.dto';
 import { IdParam, IdsDto, QueryDto } from '../../dto/common.dto';
 import { ClassService } from '../../services/class.service';
-import { CreateClassDto, UpdateClassDto } from '../../dto/class.dto';
+import { CreateClassDto, HideShowClassDto, UpdateClassDto } from '../../dto/class.dto';
 
 @Controller('teacher/classes')
 @UseGuards(RolesGuard)
@@ -31,6 +31,11 @@ export class TeacherClassController {
     @Put('/:id')
     async updateClass(@Req() { user }: IRequest, @Param() { id }: IdParam, @Body() body: UpdateClassDto) {
         return this.classService.updateClass(user.id, id, body);
+    }
+
+    @Patch('/:id')
+    async hideShowClass(@Req() { user }: IRequest, @Param() { id }: IdParam, @Body() body: HideShowClassDto) {
+        return this.classService.hideShowClassTeacher(user.id, id, body);
     }
 
     @Delete('/')
