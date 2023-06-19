@@ -191,6 +191,9 @@ export class QuizService {
     async doQuiz(userId: number, quizId: number, { position, answers }: DoQuizDto) {
         const quiz = await this.getQuizWithKeyByIdStudent(userId, quizId);
 
+        if (!quiz.open || dayjs(quiz.closeTime).isBefore(dayjs())) {
+            throw new HttpException(errors.INVALID_QUESTIONS_AND_KEYS, HttpStatus.BAD_REQUEST);
+        }
         if (!quiz.position) {
             throw new HttpException(errors.MISSING_POSITION, HttpStatus.CONFLICT);
         }
