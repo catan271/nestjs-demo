@@ -1,4 +1,12 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+    BaseEntity,
+    Column,
+    CreateDateColumn,
+    Entity,
+    ManyToOne,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn,
+} from 'typeorm';
 import { Position, StudentAnswerDto } from '../../dto/quiz.dto';
 import { instanceToInstance } from 'class-transformer';
 import { ClassStudent } from './classStudent.entity';
@@ -40,6 +48,12 @@ export class StudentAnswer extends BaseEntity {
         onDelete: 'CASCADE',
     })
     quiz: Quiz;
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
 
     constructor(props: Partial<StudentAnswer>) {
         super();

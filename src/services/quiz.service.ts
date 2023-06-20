@@ -44,13 +44,16 @@ export class QuizService {
     }
 
     async getListQuizzesOfClassStudent(userId: number, { classId, search = '', take, skip }: GetListQuizzesDto) {
-        const _class = await this.classService.getClassOfStudentById(userId, classId);
-
         const query = this.quizRepository
             .createQueryBuilder('quiz')
-            .leftJoinAndSelect('quiz.studentAnswers', 'studentAnswer', 'studentAnswer.classStudent = :studentId', {
-                studentId: _class.classStudents[0].id,
-            })
+            .innerJoin('quiz.class', 'class')
+            .innerJoin(
+                'class.classStudents',
+                'classStudent',
+                'classStudent.userId = :userId AND classStudent.waiting = 0',
+                { userId },
+            )
+            .leftJoinAndSelect('quiz.studentAnswers', 'studentAnswer', 'studentAnswer.classStudentId = classStudent.id')
             .where({ classId })
             .orderBy({
                 'quiz.id': 'DESC',
