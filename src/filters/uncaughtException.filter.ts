@@ -11,7 +11,7 @@ export class UncaughtExceptionFilter implements ExceptionFilter {
             res.status(exception.getStatus()).json(exception);
         } else if (exception instanceof TypeORMError) {
             console.error(exception);
-            res.status(400).json({
+            res.status(500).json({
                 status: 500,
                 name: 'TypeORMError',
                 message: 'Lỗi truy nhập cơ sở dữ liệu',

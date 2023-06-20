@@ -52,7 +52,7 @@ export class MemberService {
 
         return {
             teachers: { records: teachers },
-            students: { take, skip, records, total },
+            students: { take, skip, total, records },
         };
     }
 

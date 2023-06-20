@@ -23,26 +23,30 @@ export class QuizService {
         private studentAnswerRepository: Repository<StudentAnswer>,
     ) {}
 
-    async getListQuizzesOfClass(userId: number, { classId, take = 10, skip = 0 }: GetListQuizzesDto) {
+    async getListQuizzesOfClass(userId: number, { classId, search = '', take, skip }: GetListQuizzesDto) {
         await this.classService.getClassOfTeacherById(userId, classId);
 
-        const [records, total] = await this.quizRepository
+        const query = this.quizRepository
             .createQueryBuilder('quiz')
             .where({ classId })
             .orderBy({
                 'quiz.id': 'DESC',
             })
             .take(take)
-            .skip(skip)
-            .getManyAndCount();
+            .skip(skip);
+        if (search) {
+            search = '%' + search.replace(/\s+/g, '%') + '%';
+            query.andWhere('UPPER(quiz.name) LIKE UPPER(:search)', { search });
+        }
 
-        return { take, skip, records, total };
+        const [records, total] = await query.getManyAndCount();
+        return { take, skip, total, records };
     }
 
-    async getListQuizzesOfClassStudent(userId: number, { classId, take = 10, skip = 0 }: GetListQuizzesDto) {
+    async getListQuizzesOfClassStudent(userId: number, { classId, search = '', take, skip }: GetListQuizzesDto) {
         const _class = await this.classService.getClassOfStudentById(userId, classId);
 
-        const [records, total] = await this.quizRepository
+        const query = this.quizRepository
             .createQueryBuilder('quiz')
             .leftJoinAndSelect('quiz.studentAnswers', 'studentAnswer', 'studentAnswer.classStudent = :studentId', {
                 studentId: _class.classStudents[0].id,
@@ -52,10 +56,14 @@ export class QuizService {
                 'quiz.id': 'DESC',
             })
             .take(take)
-            .skip(skip)
-            .getManyAndCount();
+            .skip(skip);
+        if (search) {
+            search = '%' + search.replace(/\s+/g, '%') + '%';
+            query.andWhere('UPPER(quiz.name) LIKE UPPER(:search)', { search });
+        }
 
-        return { take, skip, records, total };
+        const [records, total] = await query.getManyAndCount();
+        return { take, skip, total, records };
     }
 
     async getQuizById(userId: number, id: number) {
@@ -65,6 +73,8 @@ export class QuizService {
             .innerJoin('class.classTeachers', 'classTeacher', 'classTeacher.userId = :userId', { userId })
             .innerJoinAndSelect('quiz.key', 'key')
             .leftJoinAndSelect('quiz.studentAnswers', 'studentAnswer')
+            .leftJoinAndSelect('studentAnswer.classStudent', 'classStudent')
+            .leftJoinAndSelect('classStudent.user', 'user')
             .where({ id })
             .getOne();
         if (!quiz) {
@@ -83,10 +93,14 @@ export class QuizService {
                 'classStudent.userId = :userId AND classStudent.waiting = 0',
                 { userId },
             )
+            .leftJoinAndSelect('quiz.studentAnswers', 'studentAnswer', 'studentAnswer.classStudentId = classStudent.id')
             .where({ id })
             .getOne();
         if (!quiz) {
             throw new HttpException(errors.NOT_FOUND, HttpStatus.NOT_FOUND);
+        }
+        if (!quiz.open || dayjs(quiz.closeTime).isBefore(dayjs())) {
+            throw new HttpException(errors.QUIZ_CLOSED, HttpStatus.BAD_REQUEST);
         }
         return quiz;
     }
@@ -169,9 +183,6 @@ export class QuizService {
         const quiz = await this.getQuizWithKeyByIdStudent(userId, quizId);
         const classStudentId = quiz.class.classStudents[0].id;
 
-        if (!quiz.open || dayjs(quiz.closeTime).isBefore(dayjs())) {
-            throw new HttpException(errors.QUIZ_CLOSED, HttpStatus.BAD_REQUEST);
-        }
         if (await this.studentAnswerRepository.findOneBy({ classStudentId, quizId })) {
             throw new HttpException(errors.QUIZ_DONE, HttpStatus.BAD_REQUEST);
         }
